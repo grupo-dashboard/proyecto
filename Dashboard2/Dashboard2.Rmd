@@ -1,0 +1,482 @@
+---
+title: "Dashboard2"
+author: "Pilar Paredes y josefa Neuman"
+date: "2023-05-20"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r include=FALSE}
+rm(list = ls())
+```
+```{r include = FALSE}
+#paquetes utiles 
+library(dplyr)
+library(ggplot2)
+library(haven)
+library(tidyverse)
+library(forcats)
+
+library(RColorBrewer)
+library(ggfittext)
+options(scipen=999)
+install.packages("ggfittext")
+
+```
+
+Guión de la historia: 
+Guión de la historia: Se responderá la pregunta ¿Ha aumentando la participación femenina en América a lo largo de los años?
+El siguiente trabajo tendrá un mapa del America en el cual un usuario podrá seleccionar paises del mundo, los cuales fueron elegidos según los datos que disponibles. El usuario al posarse en un país verá datos referentes a porcentajes de participación femenina y masculina en la fuerza laboral. Se considerara los siguientes datos:
+- Tasa de participación de la fuerza laboral total en el mundo
+- Tasa de participación de la fuerza laboral femenina en el mundo
+- Tasa de participación de la fuerza laboral masculina en el mundo
+- Tasa de participación de la fuerza laboral total en el sector de agricultura en el mundo
+- Tasa de participación de la fuerza laboral femenina en el sector de agricultura en el mundo
+- Tasa de participación de la fuerza laboral masculina en el sector de agricultura en el mundo
+- Tasa de participación de la fuerza laboral total en el sector industrial en el mundo
+- Tasa de participación de la fuerza laboral femenina en el sector industrial en el mundo
+- Tasa de participación de la fuerza laboral masculina en el sector industrial en el mundo
+- Tasa de participación de la fuerza laboral femenina en porcentaje de la fuerza laboral masculina en el mundo
+- Tasa de participación de la fuerza laboral femenina en altos y medianos cargos dentro de las organizaciones en el mundo
+Cada base de datos tiene la información detallada por paises, por lo que se filtrara para paises Americanos y para un periodo de tiempo del año 2000 al 2022, siendo importante destacar que el 2021 es el último año con mayor cantidad de información. 
+Con este trabajo se quiere visualizar las brechas de oportunidades laborales por género en un set de paises y periodo de tiempo definido. 
+Para analizar los datos se realizo las siguientes operaciones, 
+
+
+
+```{r include = FALSE}
+
+library(readxl)
+
+tasa_laboral_mundo <- read_excel("datos/tasa_laboral_mundo.xls", 
+    skip = 2)
+View(tasa_laboral_mundo)
+
+
+t_poblacti_total <- read_excel("datos/t_poblacti_total.xls", 
+    skip = 2)
+View(t_poblacti_total)
+
+
+tparticipacion_hombre_mujer <- read_excel("datos/tparticipacion_hombre_mujer.xls", 
+    skip = 2)
+View(tparticipacion_hombre_mujer)
+
+
+tasa_act_femmasc <- read_excel("datos/tasa_act_femmasc.xls", 
+    skip = 2)
+View(tasa_act_femmasc)
+
+
+tasa_act_fem <- read_excel("datos/tasa_act_fem.xls", 
+    skip = 2)
+View(tasa_act_fem)
+
+
+
+mujeres_manager <- read_excel("datos/mujeres_manager.xls", #base con aun menos datos
+    skip = 2)
+View(mujeres_manager)
+
+
+agricultura_hombre <- read_excel("datos/agricultura_hombre.xls", 
+    skip = 2)
+View(agricultura_hombre)
+
+agricultura_mujer <- read_excel("datos/agricultura_mujer.xls", 
+    skip = 2)
+View(agricultura_mujer)
+
+empleototal_agricultura <- read_excel("datos/empleototal_agricultura.xls", 
+    skip = 2)
+View(empleototal_agricultura)
+
+industria_mujer <- read_excel("datos/industria_mujer.xls", 
+    skip = 2)
+View(industria_mujer)
+
+industria_hombre <- read_excel("datos/industria_hombre.xls", 
+    skip = 2)
+View(industria_hombre)
+
+empleototal_industria <- read_excel("datos/empleototal_industria.xls", 
+    skip = 2)
+View(empleototal_industria)
+
+
+
+```
+
+```{r include = FALSE}
+
+
+# cambiando las bases 
+library(dplyr)
+library(tidyverse)
+tasa_laboral_mundo <- tasa_laboral_mundo %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa") %>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_tasalaboral = rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+
+ 
+
+
+
+tparticipacion_hombre_mujer <- tparticipacion_hombre_mujer %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa") %>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_tparticipacion_hombre_mujer = rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+
+
+tasa_act_femmasc <- tasa_act_femmasc %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa") %>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_tasa_act_femmasc = rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+
+
+tasa_act_fem <- tasa_act_fem %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa") %>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_tasa_act_fem = rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+  
+
+mujeres_manager <- mujeres_manager %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa") %>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_mujeres_manager= rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+
+
+agricultura_hombre <- agricultura_hombre %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa") %>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_agricultura_hombre= rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+
+
+agricultura_mujer <- agricultura_mujer %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa") %>%
+    select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_agricultura_mujer= rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+
+
+empleototal_agricultura <- empleototal_agricultura %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa") %>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_empleototal_agricultura= rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+  
+
+industria_mujer <- industria_mujer%>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa") %>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_industria_mujer= rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+  
+
+industria_hombre <- industria_hombre %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")%>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_industria_hombre= rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+
+
+empleototal_industria <- empleototal_industria %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")%>%
+  select(Chile, Canada, Brazil, Ecuador, Colombia, Mexico, año) %>%
+  mutate(Promedio_empleototal_industria= rowMeans(select(., Chile, Canada, Brazil, Ecuador, Colombia, Mexico), na.rm = TRUE))
+
+```
+
+```{r include = FALSE}
+#uniendo bases
+
+library(dplyr)
+
+# Realiza el full_join entre los dataframes
+library(dplyr)
+
+# Realiza el full_join entre las bases de datos
+nuevo_dataframe <- full_join(t_poblacti_total, empleototal_agricultura, by = "año") %>%
+  full_join(empleototal_industria, by = "año") %>%
+  full_join(industria_hombre, by = "año") %>%
+  full_join(industria_mujer, by = "año") %>%
+  full_join(agricultura_hombre, by = "año") %>%
+  full_join(agricultura_mujer, by = "año") %>%
+  full_join(empleototal_agricultura, by = "año")
+
+
+
+```
+Estadistica descriptiva
+
+```{r include=FALSE}
+
+t_poblacti_total2 <- t_poblacti_total %>%
+  pivot_longer(cols = c(Chile, Ecuador, Canada, Mexico, Brazil, Colombia, Canada), names_to = "Pais", values_to = "Poblacion_Activa") 
+
+library(dplyr)
+estats <- t_poblacti_total2 %>%
+group_by( Pais) %>%
+summarise(
+mean = mean(Poblacion_Activa),
+median = median(Poblacion_Activa),
+min = min(Poblacion_Activa),
+max = max(Poblacion_Activa),
+.groups = 'drop'
+)
+knitr::kable(estats, format = "pandoc")
+
+
+
+
+
+
+```
+
+```{r}
+print(estats)
+
+#Se realizo la estadistica descriptiva por país sobre la tasa de activos por año, esta se realizará tambien para la participacion femenina y masculina de las industrias y la agricultura
+```
+
+
+
+Graficos exploratorios
+```{r include = FALSE}
+# Carga los paquetes
+library(tidyverse)
+library(ggplot2)
+
+# Muestra el grafico
+
+#graficos por categoria
+
+grafico <- ggplot(tasa_laboral_mundo, aes(x = año, group = 1)) +
+  geom_line(aes(y = Chile, color = "Chile"))+
+  geom_line(aes(y = Brazil, color = "Brazil")) +
+  geom_line(aes(y = Canada, color = "Canada")) +
+  geom_line(aes(y = Mexico, color = "Mexico")) +
+  labs(x = "Año", y = "Tasa laboral", title = "Cambios en las tasas laborales por años") +
+  scale_color_manual(values = c("Chile" = "blue",  "Brazil" = "green", "Canada" = "purple", "Mexico" = "black")) +
+  theme_minimal()
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+invisible(print(grafico))
+
+
+
+grafico1 <- ggplot(agricultura_hombre, aes(x = año, group = 1)) +
+  geom_line(aes(y = Chile, color = "Chile")) +
+  geom_line(aes(y = Brazil, color = "Brazil")) +
+  geom_line(aes(y = Canada, color = "Canada")) +
+   geom_line(aes(y = Mexico, color = "Mexico")) +
+  labs(x = "Año", y = "Tasa laboral", title = "Participacion masculina agricultura por años") +
+  scale_color_manual(values = c("Chile" = "blue", "Brazil" = "green", "Canada" = "purple", "Mexico" = "black")) +
+  theme_minimal()
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(grafico1)
+
+grafico2 <- ggplot(agricultura_mujer, aes(x = año, group = 1)) +
+  geom_line(aes(y = Chile, color = "Chile")) +
+  geom_line(aes(y = Brazil, color = "Brazil")) +
+  geom_line(aes(y = Canada, color = "Canada")) +
+   geom_line(aes(y = Mexico, color = "Mexico")) +
+  labs(x = "Año", y = "Tasa laboral", title = "Participacion Femenina agricultura por años") +
+  scale_color_manual(values = c("Chile" = "blue",  "Brazil" = "green", "Canada" = "purple", "Mexico" = "black")) +
+  theme_minimal()
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(grafico2)
+
+
+
+
+
+
+
+```
+
+
+```{r}
+print(grafico)
+print(grafico1)
+print(grafico2)
+
+#Se van a realizar estos graficos comparativos para la participación Masculina y Femenina en la industria
+#Cabe destacar que Canadá es el país con una mayor tasa laboral, sin embargo, todos los países analizados muestran una fuerte baja en los años que comprenden la pandemia y la emergenica sanitaria
+```
+
+
+
+Grafico del promedio de tasas de activos totales en los distintos paises
+
+```{r include = FALSE}
+
+library(ggplot2)
+library(ggthemes)
+
+Promedio_activos_pais <-  nuevo_dataframe %>%
+  pivot_longer(cols = c(Chile.x, Ecuador.x, Canada.x, Mexico.x, Brazil.x, Colombia.x, Canada.x), names_to = "Pais", values_to = "Poblacion_Activa") %>%
+  ggplot(aes(x = año, y = Promedio_t_poblacti_total, fill = Pais)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  theme_wsj() +
+  labs(x = "Año", y = "Promedio de Poblacion Activa", fill = "Pais")
+
+Promedio_activos_pais
+```
+
+```{r}
+print(Promedio_activos_pais)
+```
+
+
+
+
+
+
+```{r include= FALSE}
+#Otro tipo de graficos separando por pais
+
+library(ggthemes)
+ #Se va a hacer esto para los paises restantes
+
+#Tasa laboral de distintos paises
+grafico_chileTL <-  tasa_laboral_mundo %>% 
+ggplot(aes(x = año, y = Chile, col = Chile, group = 1)) +
+geom_line() +
+  labs(x = "Año", y = "Tasa laboral", title = "Tasa laboral Chile")
+theme_tufte()
+
+
+
+
+
+
+
+
+
+
+```
+
+```{r}
+print(grafico_chileTL)
+#Se va a realizar este tipo de grafico para México, Ecuador, Colombia, Brasil y para Canadá, mostrando su tasa de participacióon laboral.
+```
+
+
+```{r }
+#Tremap
+
+library(treemap)
+
+# treemap para la participacion masculina en la industria 
+datos_treemap <- data.frame(
+  Pais = c("Ecuador", "Chile", "Brazil", "Colombia", "Mexico", "Canada"),
+  Valor = c(industria_hombre$Ecuador, industria_hombre$Chile,
+            industria_hombre$Brazil, industria_hombre$Colombia, industria_hombre$Mexico, industria_hombre$Canada)
+)
+
+# Crear el treemap
+ treemap_industria <- treemap(datos_treemap,
+        index = "Pais",
+        vSize = "Valor",
+        type = "index",
+        palette = "Dark2",
+        title = "Participacion Industrial masculina pais")
+
+# treemap para la participacion femenina en la industria 
+datos_treemap <- data.frame(
+  Pais = c("Ecuador", "Chile", "Brazil", "Colombia", "Mexico", "Canada"),
+  Valor = c(industria_mujer$Ecuador, industria_mujer$Chile,
+            industria_mujer$Brazil, industria_mujer$Colombia, industria_mujer$Mexico, industria_mujer$Canada)
+)
+
+# Crear el treemap
+treemap_industria_mujeres <- treemap(datos_treemap,
+        index = "Pais",
+        vSize = "Valor",
+        type = "index",
+        palette = "Dark2",
+        title = "Participacion Industrial femenina pais")
+#Se va a realizar este tipo de grafico tambien para la participación en agricultura femenina y masculina y para la participacion total.
+
+
+```
+
+
+
+
+
+
+Mapa de America
+```{r include = FALSE}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(chilemapas)
+library(maps)
+library(tmap)
+library(sf)
+library(viridis)
+library(leaflet)
+library(geojsonio)
+
+library(rnaturalearth)
+library(ggplot2)
+
+
+library(ggplot2)
+
+mapa_america <- map_data("world") %>%
+  filter(region %in% c("Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Ecuador", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela", "Mexico", "USA", "Canada"))
+
+grafico_mapa <- ggplot(mapa_america, aes(long, lat, group = group, fill = region)) +
+  geom_polygon(colour = "#FFFFFF") +
+  scale_fill_manual(values = c("#8DD3C7", "#FB8072", "#FFFFB3", "#BEBADA", "#FB8072", "#80B1D3", "#FDB462", "#FFED6F", "#B3DE69", "#D9D9D9", "#FCCDE5", "#FF0000", "#FEB24C", "#1F78B4", "#1F78B4"),
+                    breaks = c("Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Ecuador", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela", "Mexico", "USA", "Canada"),
+                    labels = c("Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Ecuador", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela", "Mexico", "United States", "Canada"),
+                    drop = FALSE) +
+  coord_fixed() +
+  theme_void() +
+  theme(legend.position = "none")
+
+print(grafico_mapa)
+
+
+# Guardar el gr?fico mostrado en la ventana gr?fica como PNG
+ggsave("mapa_america.png", width = 8, height = 6, dpi = 300)
+
+#Este es el mapa en el cual se va a basar nuestro Dashboard 
+
+```
+
+```{r}
+#Este es el mapa en el cual se va a basar nuestro Dashboard
+print(grafico_mapa)
+```
+
+
+
+
+

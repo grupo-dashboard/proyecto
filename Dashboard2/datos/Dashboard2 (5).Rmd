@@ -1,0 +1,478 @@
+---
+title: "Entrega 2: Dashboard"
+author: "Pilar Paredes y Josefa Neumann"
+date: "2023-05-20"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+rm(list = ls())
+```
+
+```{r}
+#paquetes utiles 
+library(dplyr)
+
+```
+bajando las bases de datos
+```{r}
+library(readxl)
+
+tasa_act_femmasc <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/tasa_act_femmasc.xls", 
+    skip = 2)
+
+tasa_act_fem <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/tasa_act_fem.xls", 
+    skip = 2)
+
+
+management_Mujer <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/management_Mujer.xls",  #base con pocos datos, solo algunos paises
+    sheet = "Data", skip = 2)
+
+
+agricultura_hombre <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/agricultura_hombre.xls", 
+    skip = 2)
+
+
+agricultura_mujer <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/agricultura_mujer.xls", 
+    skip = 2)
+
+empleototal_agricultura <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/empleototal_agricultura.xls", 
+    skip = 2)
+
+industria_mujer <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/industria_mujer.xls", 
+    skip = 2)
+
+industria_hombre <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/industria_hombre.xls", 
+    skip = 2)
+
+empleototal_industria <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/empleototal_industria.xls", 
+    skip = 2)
+
+tasa_act_masc <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/tasa_act_masc.xls", 
+    skip = 2)
+
+tasapoblacional_total <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/t_poblacti_total.xls", 
+    skip = 2)
+```
+
+```{r}
+# cambiando las bases 
+library(tidyverse)
+
+tasapoblacional_total <- tasapoblacional_total %>%
+  filter(tasapoblacional_total$`Country Name` == "Argentina" |
+           tasapoblacional_total$`Country Name`== "Bolivia" |
+           tasapoblacional_total$`Country Name` == "Brazil" |
+           tasapoblacional_total$`Country Name`== "Canada" |
+           tasapoblacional_total$`Country Name` == "Chile" |
+           tasapoblacional_total$`Country Name`== "Colombia" |
+           tasapoblacional_total$`Country Name` == "Costa Rica" |
+           tasapoblacional_total$`Country Name`== "Guyana" |
+           tasapoblacional_total$`Country Name` == "Guatemala" |
+           tasapoblacional_total$`Country Name`== "Honduras" |
+           tasapoblacional_total$`Country Name` == "Mexico" |
+           tasapoblacional_total$`Country Name`== "Nicaragua" |
+           tasapoblacional_total$`Country Name` == "Peru" |
+           tasapoblacional_total$`Country Name`== "Panama" |
+           tasapoblacional_total$`Country Name` == "Paraguay" |
+           tasapoblacional_total$`Country Name`== "El Salvador" |
+           tasapoblacional_total$`Country Name` == "Uruguay" |
+           tasapoblacional_total$`Country Name`== "Venezuela, RB" |
+           tasapoblacional_total$`Country Name` == "Ecuador" |
+           tasapoblacional_total$`Country Name`== "Belize" |
+           tasapoblacional_total$`Country Name` == "United States")
+
+tasa_act_masc <- tasa_act_masc %>%
+  filter(tasa_act_masc$`Country Name` == "Argentina" |
+           tasa_act_masc$`Country Name`== "Bolivia" |
+           tasa_act_masc$`Country Name` == "Brazil" |
+           tasa_act_masc$`Country Name`== "Canada" |
+           tasa_act_masc$`Country Name` == "Chile" |
+           tasa_act_masc$`Country Name`== "Colombia" |
+           tasa_act_masc$`Country Name` == "Costa Rica" |
+           tasa_act_masc$`Country Name`== "Guyana" |
+           tasa_act_masc$`Country Name` == "Guatemala" |
+           tasa_act_masc$`Country Name`== "Honduras" |
+           tasa_act_masc$`Country Name` == "Mexico" |
+           tasa_act_masc$`Country Name`== "Nicaragua" |
+           tasa_act_masc$`Country Name` == "Peru" |
+           tasa_act_masc$`Country Name`== "Panama" |
+           tasa_act_masc$`Country Name` == "Paraguay" |
+           tasa_act_masc$`Country Name`== "El Salvador" |
+           tasa_act_masc$`Country Name` == "Uruguay" |
+           tasa_act_masc$`Country Name`== "Venezuela, RB" |
+           tasa_act_masc$`Country Name` == "Ecuador" |
+           tasa_act_masc$`Country Name`== "Belize" |
+           tasa_act_masc$`Country Name` == "United States")
+
+
+tasa_act_femmasc <- tasa_act_femmasc %>%
+  filter(tasa_act_femmasc$`Country Name` == "Argentina" |
+           tasa_act_femmasc$`Country Name`== "Bolivia" |
+           tasa_act_femmasc$`Country Name` == "Brazil" |
+           tasa_act_femmasc$`Country Name`== "Canada" |
+           tasa_act_femmasc$`Country Name` == "Chile" |
+           tasa_act_femmasc$`Country Name`== "Colombia" |
+           tasa_act_femmasc$`Country Name` == "Costa Rica" |
+           tasa_act_femmasc$`Country Name`== "Guyana" |
+           tasa_act_femmasc$`Country Name` == "Guatemala" |
+           tasa_act_femmasc$`Country Name`== "Honduras" |
+           tasa_act_femmasc$`Country Name` == "Mexico" |
+           tasa_act_femmasc$`Country Name`== "Nicaragua" |
+           tasa_act_femmasc$`Country Name` == "Peru" |
+           tasa_act_femmasc$`Country Name`== "Panama" |
+           tasa_act_femmasc$`Country Name` == "Paraguay" |
+           tasa_act_femmasc$`Country Name`== "El Salvador" |
+           tasa_act_femmasc$`Country Name` == "Uruguay" |
+           tasa_act_femmasc$`Country Name`== "Venezuela, RB" |
+           tasa_act_femmasc$`Country Name` == "Ecuador" |
+           tasa_act_femmasc$`Country Name`== "Belize" |
+           tasa_act_femmasc$`Country Name` == "United States")
+
+
+tasa_act_fem <- tasa_act_fem %>%
+  filter(tasa_act_fem$`Country Name` == "Argentina" |
+           tasa_act_fem$`Country Name`== "Bolivia" |
+           tasa_act_fem$`Country Name` == "Brazil" |
+           tasa_act_fem$`Country Name`== "Canada" |
+           tasa_act_fem$`Country Name` == "Chile" |
+           tasa_act_fem$`Country Name`== "Colombia" |
+           tasa_act_fem$`Country Name` == "Costa Rica" |
+           tasa_act_fem$`Country Name`== "Guyana" |
+           tasa_act_fem$`Country Name` == "Guatemala" |
+           tasa_act_fem$`Country Name`== "Honduras" |
+           tasa_act_fem$`Country Name` == "Mexico" |
+           tasa_act_fem$`Country Name`== "Nicaragua" |
+           tasa_act_fem$`Country Name` == "Peru" |
+           tasa_act_fem$`Country Name`== "Panama" |
+           tasa_act_fem$`Country Name` == "Paraguay" |
+           tasa_act_fem$`Country Name`== "El Salvador" |
+           tasa_act_fem$`Country Name` == "Uruguay" |
+           tasa_act_fem$`Country Name`== "Venezuela, RB" |
+           tasa_act_fem$`Country Name` == "Ecuador" |
+           tasa_act_fem$`Country Name`== "Belize" |
+           tasa_act_fem$`Country Name` == "United States")
+
+management_Mujer <- management_Mujer %>%
+  filter(management_Mujer$`Country Name` == "Argentina" |
+           management_Mujer$`Country Name`== "Bolivia" |
+           management_Mujer$`Country Name` == "Brazil" |
+           management_Mujer$`Country Name`== "Canada" |
+           management_Mujer$`Country Name` == "Chile" |
+           management_Mujer$`Country Name`== "Colombia" |
+           management_Mujer$`Country Name` == "Costa Rica" |
+           management_Mujer$`Country Name`== "Guyana" |
+           management_Mujer$`Country Name` == "Guatemala" |
+           management_Mujer$`Country Name`== "Honduras" |
+           management_Mujer$`Country Name` == "Mexico" |
+           management_Mujer$`Country Name`== "Nicaragua" |
+           management_Mujer$`Country Name` == "Peru" |
+           management_Mujer$`Country Name`== "Panama" |
+           management_Mujer$`Country Name` == "Paraguay" |
+           management_Mujer$`Country Name`== "El Salvador" |
+           management_Mujer$`Country Name` == "Uruguay" |
+           management_Mujer$`Country Name`== "Venezuela, RB" |
+           management_Mujer$`Country Name` == "Ecuador" |
+           management_Mujer$`Country Name`== "Belize" |
+           management_Mujer$`Country Name` == "United States")
+
+industria_mujer <- industria_mujer %>%
+  filter(industria_mujer$`Country Name` == "Argentina" |
+           industria_mujer$`Country Name`== "Bolivia" |
+           industria_mujer$`Country Name` == "Brazil" |
+           industria_mujer$`Country Name`== "Canada" |
+           industria_mujer$`Country Name` == "Chile" |
+           industria_mujer$`Country Name`== "Colombia" |
+           industria_mujer$`Country Name` == "Costa Rica" |
+           industria_mujer$`Country Name`== "Guyana" |
+           industria_mujer$`Country Name` == "Guatemala" |
+           industria_mujer$`Country Name`== "Honduras" |
+           industria_mujer$`Country Name` == "Mexico" |
+           industria_mujer$`Country Name`== "Nicaragua" |
+           industria_mujer$`Country Name` == "Peru" |
+           industria_mujer$`Country Name`== "Panama" |
+           industria_mujer$`Country Name` == "Paraguay" |
+           industria_mujer$`Country Name`== "El Salvador" |
+           industria_mujer$`Country Name` == "Uruguay" |
+           industria_mujer$`Country Name`== "Venezuela, RB" |
+           industria_mujer$`Country Name` == "Ecuador" |
+           industria_mujer$`Country Name`== "Belize" |
+           industria_mujer$`Country Name` == "United States")
+
+
+industria_hombre <- industria_hombre %>%
+  filter(industria_hombre$`Country Name` == "Argentina" |
+           industria_hombre$`Country Name`== "Bolivia" |
+           industria_hombre$`Country Name` == "Brazil" |
+           industria_hombre$`Country Name`== "Canada" |
+           industria_hombre$`Country Name` == "Chile" |
+           industria_hombre$`Country Name`== "Colombia" |
+           industria_hombre$`Country Name` == "Costa Rica" |
+           industria_hombre$`Country Name`== "Guyana" |
+           industria_hombre$`Country Name` == "Guatemala" |
+           industria_hombre$`Country Name`== "Honduras" |
+           industria_hombre$`Country Name` == "Mexico" |
+           industria_hombre$`Country Name`== "Nicaragua" |
+           industria_hombre$`Country Name` == "Peru" |
+           industria_hombre$`Country Name`== "Panama" |
+           industria_hombre$`Country Name` == "Paraguay" |
+           industria_hombre$`Country Name`== "El Salvador" |
+           industria_hombre$`Country Name` == "Uruguay" |
+           industria_hombre$`Country Name`== "Venezuela, RB" |
+           industria_hombre$`Country Name` == "Ecuador" |
+           industria_hombre$`Country Name`== "Belize" |
+           industria_hombre$`Country Name` == "United States")
+
+
+empleototal_industria <- empleototal_industria %>%
+  filter(empleototal_industria$`Country Name` == "Argentina" |
+           empleototal_industria$`Country Name`== "Bolivia" |
+           empleototal_industria$`Country Name` == "Brazil" |
+           empleototal_industria$`Country Name`== "Canada" |
+           empleototal_industria$`Country Name` == "Chile" |
+           empleototal_industria$`Country Name`== "Colombia" |
+           empleototal_industria$`Country Name` == "Costa Rica" |
+           empleototal_industria$`Country Name`== "Guyana" |
+           empleototal_industria$`Country Name` == "Guatemala" |
+           empleototal_industria$`Country Name`== "Honduras" |
+           empleototal_industria$`Country Name` == "Mexico" |
+           empleototal_industria$`Country Name`== "Nicaragua" |
+           empleototal_industria$`Country Name` == "Peru" |
+           empleototal_industria$`Country Name`== "Panama" |
+           empleototal_industria$`Country Name` == "Paraguay" |
+           empleototal_industria$`Country Name`== "El Salvador" |
+           empleototal_industria$`Country Name` == "Uruguay" |
+           empleototal_industria$`Country Name`== "Venezuela, RB" |
+           empleototal_industria$`Country Name` == "Ecuador" |
+           empleototal_industria$`Country Name`== "Belize" |
+           empleototal_industria$`Country Name` == "United States")
+
+empleototal_agricultura <- empleototal_agricultura %>%
+  filter(empleototal_agricultura$`Country Name` == "Argentina" |
+           empleototal_agricultura$`Country Name`== "Bolivia" |
+           empleototal_agricultura$`Country Name` == "Brazil" |
+           empleototal_agricultura$`Country Name`== "Canada" |
+           empleototal_agricultura$`Country Name` == "Chile" |
+           empleototal_agricultura$`Country Name`== "Colombia" |
+           empleototal_agricultura$`Country Name` == "Costa Rica" |
+           empleototal_agricultura$`Country Name`== "Guyana" |
+           empleototal_agricultura$`Country Name` == "Guatemala" |
+           empleototal_agricultura$`Country Name`== "Honduras" |
+           empleototal_agricultura$`Country Name` == "Mexico" |
+           empleototal_agricultura$`Country Name`== "Nicaragua" |
+           empleototal_agricultura$`Country Name` == "Peru" |
+           empleototal_agricultura$`Country Name`== "Panama" |
+           empleototal_agricultura$`Country Name` == "Paraguay" |
+           empleototal_agricultura$`Country Name`== "El Salvador" |
+           empleototal_agricultura$`Country Name` == "Uruguay" |
+           empleototal_agricultura$`Country Name`== "Venezuela, RB" |
+           empleototal_agricultura$`Country Name` == "Ecuador" |
+           empleototal_agricultura$`Country Name`== "Belize" |
+           empleototal_agricultura$`Country Name` == "United States")
+
+agricultura_hombre <- agricultura_hombre %>%
+  filter(agricultura_hombre$`Country Name` == "Argentina" |
+           agricultura_hombre$`Country Name`== "Bolivia" |
+           agricultura_hombre$`Country Name` == "Brazil" |
+           agricultura_hombre$`Country Name`== "Canada" |
+           agricultura_hombre$`Country Name` == "Chile" |
+           agricultura_hombre$`Country Name`== "Colombia" |
+           agricultura_hombre$`Country Name` == "Costa Rica" |
+           agricultura_hombre$`Country Name`== "Guyana" |
+           agricultura_hombre$`Country Name` == "Guatemala" |
+           agricultura_hombre$`Country Name`== "Honduras" |
+           agricultura_hombre$`Country Name` == "Mexico" |
+           agricultura_hombre$`Country Name`== "Nicaragua" |
+           agricultura_hombre$`Country Name` == "Peru" |
+           agricultura_hombre$`Country Name`== "Panama" |
+           agricultura_hombre$`Country Name` == "Paraguay" |
+           agricultura_hombre$`Country Name`== "El Salvador" |
+           agricultura_hombre$`Country Name` == "Uruguay" |
+           agricultura_hombre$`Country Name`== "Venezuela, RB" |
+           agricultura_hombre$`Country Name` == "Ecuador" |
+           agricultura_hombre$`Country Name`== "Belize" |
+           agricultura_hombre$`Country Name` == "United States")
+
+
+agricultura_mujer <- agricultura_mujer %>%
+  filter(agricultura_mujer$`Country Name` == "Argentina" |
+           agricultura_mujer$`Country Name`== "Bolivia" |
+           agricultura_mujer$`Country Name` == "Brazil" |
+           agricultura_mujer$`Country Name`== "Canada" |
+           agricultura_mujer$`Country Name` == "Chile" |
+           agricultura_mujer$`Country Name`== "Colombia" |
+           agricultura_mujer$`Country Name` == "Costa Rica" |
+           agricultura_mujer$`Country Name`== "Guyana" |
+           agricultura_mujer$`Country Name` == "Guatemala" |
+           agricultura_mujer$`Country Name`== "Honduras" |
+           agricultura_mujer$`Country Name` == "Mexico" |
+           agricultura_mujer$`Country Name`== "Nicaragua" |
+           agricultura_mujer$`Country Name` == "Peru" |
+           agricultura_mujer$`Country Name`== "Panama" |
+           agricultura_mujer$`Country Name` == "Paraguay" |
+           agricultura_mujer$`Country Name`== "El Salvador" |
+           agricultura_mujer$`Country Name` == "Uruguay" |
+           agricultura_mujer$`Country Name`== "Venezuela, RB" |
+           agricultura_mujer$`Country Name` == "Ecuador" |
+           agricultura_mujer$`Country Name`== "Belize" |
+           agricultura_mujer$`Country Name` == "United States")
+        
+```
+
+```{r}
+tasa_act_femmasc <- tasa_act_femmasc %>% 
+  select(-c(cols = starts_with("19")))
+```
+
+
+```{r}
+
+# cambiando las bases 
+library(tidyverse)
+
+
+tasapoblacional_total <- tasapoblacional_total %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+tasa_act_masc <- tasa_act_masc %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+tasa_act_femmasc <- tasa_act_femmasc %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+tasa_act_fem <- tasa_act_fem %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+management_Mujer <- management_Mujer %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+agricultura_hombre <- agricultura_hombre %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+
+agricultura_mujer <- agricultura_mujer %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+empleototal_agricultura <- empleototal_agricultura %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+
+industria_mujer <- industria_mujer%>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+industria_hombre <- industria_hombre %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+empleototal_industria <- empleototal_industria %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+
+```
+
+```{r}
+tasapoblacional_total <- tasapoblacional_total %>%
+  select()
+
+
+tasa_act_masc <- tasa_act_masc %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+tasa_act_femmasc <- tasa_act_femmasc %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+tasa_act_fem <- tasa_act_fem %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+management_Mujer <- management_Mujer %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+agricultura_hombre <- agricultura_hombre %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+
+agricultura_mujer <- agricultura_mujer %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+empleototal_agricultura <- empleototal_agricultura %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+
+industria_mujer <- industria_mujer%>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+
+industria_hombre <- industria_hombre %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+empleototal_industria <- empleototal_industria %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "a?o", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")
+
+```
+
+
+
+

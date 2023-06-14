@@ -1,0 +1,185 @@
+---
+title: "Entrega 2: Dashboard"
+author: "Pilar Paredes y Josefa Neumann"
+date: "2023-05-20"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+La entrega número 2 consta de 4 partes, 
+
+Guión de la historia: El siguiente trabajo tendrá un mapa del America en el cual un usuario podrá seleccionar paises del mundo, los cuales fueron elegidos según los datos que disponibles. El usuario al posarse en un país verá datos referentes a porcentajes de participación femenina y masculina en la fuerza laboral. Se considerara los siguientes datos:
+- Tasa de participación de la fuerza laboral total en el mundo
+- Tasa de participación de la fuerza laboral femenina en el mundo
+- Tasa de participación de la fuerza laboral masculina en el mundo
+- Tasa de participación de la fuerza laboral total en el sector de agricultura en el mundo
+- Tasa de participación de la fuerza laboral femenina en el sector de agricultura en el mundo
+- Tasa de participación de la fuerza laboral masculina en el sector de agricultura en el mundo
+- Tasa de participación de la fuerza laboral total en el sector industrial en el mundo
+- Tasa de participación de la fuerza laboral femenina en el sector industrial en el mundo
+- Tasa de participación de la fuerza laboral masculina en el sector industrial en el mundo
+- Tasa de participación de la fuerza laboral femenina en porcentaje de la fuerza laboral masculina en el mundo
+- Tasa de participación de la fuerza laboral femenina en altos y medianos cargos dentro de las organizaciones en el mundo
+Cada base de datos tiene la información detallada por paises, por lo que se filtrara para paises Americanos y para un periodo de tiempo del año 2000 al 2022, siendo importante destacar que el 2021 es el último año con mayor cantidad de información. 
+Con este trabajo se quiere visualizar las brechas de oportunidades laborales por género en un set de paises y periodo de tiempo definido. 
+Para analizar los datos se realizo las siguientes operaciones, 
+
+```{r}
+rm(list = ls()) #limpiar la base
+```
+Se llaman a paquetes utiles 
+```{r}
+library(dplyr)
+library(ggplot2)
+library(haven)
+library(tidyverse)
+library(forcats)
+
+library(RColorBrewer)
+library(ggfittext)
+options(scipen=999)
+
+library(readxl)
+```
+Se cargan las bases de datos recolectadas
+```{r}
+
+tasa_act_fem <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/tasa_act_fem.xls", 
+    skip = 2)
+tasa_act_masc <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/tasa_act_masc.xls", 
+    skip = 2)
+tasapoblacional_total <- read_excel("/Users/josefa/Downloads/bases_dashboard_2/t_poblacti_total.xls", 
+    skip = 2)
+```
+
+Se modifican las bases para que sean más maniobrables
+```{r}
+tasapoblacional_total <- tasapoblacional_total %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")%>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año) %>%
+  mutate(Promedio_tasalaboral = rowMeans(select(., Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador), na.rm = TRUE))
+
+tasa_act_masc <- tasa_act_masc %>%
+ mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")%>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año) %>%
+  mutate(Promedio_tasaact_masc = rowMeans(select(., Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador), na.rm = TRUE))
+
+tasa_act_fem <- tasa_act_fem %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa")%>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año) %>%
+  mutate(Promedio_tasaact_fem = rowMeans(select(., Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador), na.rm = TRUE))
+
+```
+Las bases se transforman para su posterior uso, 
+```{r}
+tasa_act_masc <- as.data.frame(tasa_act_masc)
+tasa_act_fem <- as.data.frame(tasa_act_fem)
+tasapoblacional_total <- as.data.frame(tasapoblacional_total)
+```
+Se unen las bases, para obtener una base a utilizar
+```{r}
+basefinal <- full_join(tasapoblacional_total, tasa_act_fem, by = "año") %>%
+  full_join(tasa_act_masc, by = "año")
+basefinal <- basefinal[, c("año", names(basefinal)[-16])] #se modifica el orden de las columnas por un tema estetico
+```
+Al tener la base final lista, se obtiene estadistica descriptiva acerca de los datos recolectados, y posteriormente se transforman a una tabla
+```{r}
+estadisticas <- basefinal %>%
+group_by(año, Argentina.x, Brazil.x, Canada.x, Chile.x, Mexico.x, Peru.x, Panama.x, Paraguay.x, Uruguay.x, Ecuador.x) %>%
+  summarise(
+  media = mean(Promedio_tasalaboral),
+  desviacion_estandar = sd(basefinal$Promedio_tasalaboral, na.rm = TRUE) ,
+  mediana = median(Promedio_tasalaboral),
+  min = min(Promedio_tasalaboral),
+  max = max(Promedio_tasalaboral),
+.groups = 'drop'
+)
+pander::pander(estadisticas)
+
+
+
+
+```
+Graficos exploratorios, 
+Se realizan gráficos por categorias
+```{r}
+grafico <- ggplot(tasapoblacional_total, aes(x = año, group = 1)) +
+  geom_line(aes(y = Chile, color = "Chile"))+
+  geom_line(aes(y = Brazil, color = "Brazil")) +
+  geom_line(aes(y = Canada, color = "Canada")) +
+  geom_line(aes(y = Mexico, color = "Mexico")) +
+  geom_line(aes(y = Argentina, color = "Argentina"))+
+  geom_line(aes(y = Peru, color = "Peru")) +
+  geom_line(aes(y = Panama, color = "Panama")) +
+  geom_line(aes(y = Uruguay, color = "Uruguay")) +
+  geom_line(aes(y = Ecuador, color = "Ecuador")) +
+  labs(x = "Año", y = "Tasa laboral", title = "Cambios en las tasas laborales por años") +
+  scale_color_manual(values = c("Chile" = "blue",  "Brazil" = "green", "Canada" = "purple", "Mexico" = "black","Argentina" = "red",  "Peru" = "brown", "Ecuador" = "yellow", "Panama" = "pink","Paraguay" = "orange","Uruguay" = "gold")) +
+  theme_minimal()
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+invisible(print(grafico))
+
+
+```
+Grafico del promedio de tasas de activos totales en los distintos paises
+```{r}
+Promedio_activos_pais <-  basefinal %>%
+  pivot_longer(cols = c(Argentina.x, Peru.x, Panama.x, Paraguay.x, Uruguay.x, Chile.x, Ecuador.x, Mexico.x, Brazil.x, Canada.x), names_to = "Pais", values_to = "Poblacion_Activa") %>%
+  ggplot(aes(x = año, y = Promedio_tasalaboral, fill = Pais)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  theme_classic() +
+  labs(x = "Año", y = "Promedio de Poblacion Activa", fill = "Pais")
+Promedio_activos_pais
+```
+Tasa laboral de distintos paises
+```{r}
+grafico_chileTL <-  tasapoblacional_total %>% 
+ggplot(aes(x = año, y = Chile, col = Chile, group = 1)) +
+geom_line() +
+  labs(x = "Año", y = "Tasa laboral", title = "Tasa laboral Chile")
+theme_classic()
+print(grafico_chileTL)
+```
+treemap para la participacion masculina en la industria
+```{r}
+library(treemap)
+
+```
+
+Mapas: Se creo un mapa de America pues es el territorio a estudiar
+```{r}
+library(plotly)
+library(chilemapas)
+library(maps)
+library(tmap)
+library(sf)
+library(viridis)
+library(leaflet)
+library(geojsonio)
+library(rnaturalearth)
+mapa_america <- map_data("world") %>%
+  filter(region %in% c("Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Ecuador", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela", "Mexico", "USA", "Canada"))
+grafico_mapa <- ggplot(mapa_america, aes(long, lat, group = group, fill = region)) +
+  geom_polygon(colour = "#FFFFFF") +
+  scale_fill_manual(values = c("#8DD3C7", "#FB8072", "#FFFFB3", "#BEBADA", "#FB8072", "#80B1D3", "#FDB462", "#FFED6F", "#B3DE69", "#D9D9D9", "#FCCDE5", "#FF0000", "#FEB24C", "#1F78B4", "#1F78B4"),
+                    breaks = c("Argentina", "Brazil", "Chile", "Ecuador", "Paraguay", "Peru", "Uruguay", "Panama", "Mexico", "Canada"),
+                    labels = c("Argentina", "Brazil", "Chile", "Ecuador", "Paraguay", "Peru", "Uruguay", "Panama", "Mexico", "Canada"),
+                    drop = FALSE) +
+  coord_fixed() +
+  theme_void() +
+  theme(legend.position = "none")
+print(grafico_mapa)
+# Guardar el grafico mostrado en la ventana grafica como PNG
+ggsave("mapa_america.png", width = 8, height = 6, dpi = 300)
+```
+
+
+

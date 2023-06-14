@@ -1,0 +1,495 @@
+---
+title: "Participación Laboral Femenina en América"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    theme: sandstone
+---
+
+```{r setup, include=FALSE}
+directorio <- ("C:/Users/pilar/OneDrive/Escritorio/CUARTO AÑO/R_para_la_econ/Dashboard/Dashboard/Dashboard2")
+datos <- file.path(directorio, "/datos")
+figuras <- file.path(directorio, "figuras")
+tablas <- file.path(directorio, "tablas")
+
+
+
+rm(list = ls())
+#paquetes utiles 
+library(dplyr)
+library(ggplot2)
+library(haven)
+library(tidyverse)
+library(forcats)
+
+library(RColorBrewer)
+library(ggfittext)
+options(scipen=999)
+library(readxl)
+
+
+library(readxl)
+
+salario_mujeres <- read_excel("datos/salario_mujeres.xls", 
+    skip = 2)
+
+salario_hombres <- read_excel("datos/salario_hombres.xls", 
+    skip = 2)
+
+salario_total <- read_excel("datos/salario_total.xls", 
+    skip = 2)
+
+
+
+poblacion_total <- read_excel("C:/Users/pilar/OneDrive/Escritorio/CUARTO AÑO/R_para_la_econ/Dashboard/Dashboard/Dashboard2/datos/poblacion_total.xls", 
+    skip = 2)
+
+Tasa_de_actividad_total <- read_excel("C:/Users/pilar/OneDrive/Escritorio/CUARTO AÑO/R_para_la_econ/Dashboard/Dashboard/Dashboard2/datos/Tasa_de_actividad_total.xls", 
+    skip = 2)
+View(Tasa_de_actividad_total)
+
+Tasa_de_actividad_femenina <- read_excel("C:/Users/pilar/OneDrive/Escritorio/CUARTO AÑO/R_para_la_econ/Dashboard/Dashboard/Dashboard2/datos/Tasa_de_actividad_femenina.xls", 
+    skip = 2)
+
+tasa_actividad_masculina <- read_excel("C:/Users/pilar/OneDrive/Escritorio/CUARTO AÑO/R_para_la_econ/Dashboard/Dashboard/Dashboard2/datos/tasa_actividad_masculina.xls", 
+    skip = 2)
+
+tasa_laboral_mundo <- read_excel("datos/tasa_laboral_mundo.xls", 
+    skip = 2)
+View(tasa_laboral_mundo)
+
+
+tasa_act_femmasc<- read_excel("D:/tasa_act_femmasc (1).xls", 
+    skip = 2)
+
+
+tasa_act_fem <- read_excel("D:/tasa_act_fem.xls", 
+    skip = 2)
+
+management_Mujer <- read_excel("D:/management_Mujer.xls", 
+    sheet = "Data", skip = 2)
+
+agricultura_hombre <- read_excel("D:/agricultura_hombre.xls", 
+    skip = 2)
+
+
+agricultura_mujer <- read_excel("D:/agricultura_mujer.xls", 
+    skip = 2)
+
+empleototal_agricultura <- read_excel("D:/empleototal_agricultura.xls", 
+    skip = 2)
+
+industria_mujer <- read_excel("D:/industria_mujer.xls", 
+    skip = 2)
+
+industria_hombre <- read_excel("D:/industria_hombre.xls", 
+    skip = 2)
+
+empleototal_industria <- read_excel("D:/empleototal_industria.xls", 
+    skip = 2)
+
+tasa_act_masc <- read_excel("D:/tasa_act_masc.xls", 
+    skip = 2)
+
+#################limpiamos las bases de datos
+library(dplyr)
+library(tidyverse)
+
+salario_mujeres <- salario_mujeres %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "salario_mujeres") %>%
+  pivot_wider(names_from = "Country Name", values_from = "salario_mujeres") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+salario_mujeres<- salario_mujeres %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "salario_mujeres")
+
+
+salario_hombres <- salario_hombres %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "salario_hombres") %>%
+  pivot_wider(names_from = "Country Name", values_from = "salario_hombres") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+salario_hombres<- salario_hombres%>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "salario_hombres")
+
+
+salario_total <- salario_total %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "salario_total") %>%
+  pivot_wider(names_from = "Country Name", values_from = "salario_total") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+salario_total<- salario_total %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "salario_total")
+
+
+
+
+
+poblacion_total <- poblacion_total %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "poblacion_total") %>%
+  pivot_wider(names_from = "Country Name", values_from = "poblacion_total") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+poblacion_total<- poblacion_total %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "poblacion_total")
+
+
+Tasa_de_actividad_total <- Tasa_de_actividad_total %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "Tasa_de_actividad_total") %>%
+  pivot_wider(names_from = "Country Name", values_from = "Tasa_de_actividad_total") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+Tasa_de_actividad_total<- Tasa_de_actividad_total %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "Tasa_de_actividad_total")
+
+
+
+Tasa_de_actividad_femenina <- Tasa_de_actividad_femenina %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "Tasa_de_actividad_femenina") %>%
+  pivot_wider(names_from = "Country Name", values_from = "Tasa_de_actividad_femenina") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+Tasa_de_actividad_femenina<- Tasa_de_actividad_femenina %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "Tasa_de_actividad_femenina")
+
+
+tasa_actividad_masculina <- tasa_actividad_masculina %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa_actividad_masculina") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa_actividad_masculina") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+tasa_actividad_masculina<- tasa_actividad_masculina %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "Tasa_de_actividad_masculina")
+
+
+tasa_laboral_mundo <- tasa_laboral_mundo %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa_laboral") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa_laboral") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+tasa_laboral_mundo<- tasa_laboral_mundo %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "tasa_laboral")
+
+
+agricultura_hombre <- agricultura_hombre %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa_laboral") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa_laboral") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+agricultura_hombre<- agricultura_hombre %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "agricultura_hombre")
+
+agricultura_mujer <- agricultura_mujer %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa_laboral") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa_laboral") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+agricultura_mujer<- agricultura_mujer %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "agricultura_mujer")
+
+empleototal_agricultura<- empleototal_agricultura %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa_laboral") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa_laboral") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+empleototal_agricultura<- empleototal_agricultura %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "empleo_total_agricultura")
+
+industria_hombre<- industria_hombre %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa_laboral") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa_laboral") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año)
+
+industria_hombre<- industria_hombre %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "industria_hombre")
+
+industria_mujer <- industria_mujer %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa_laboral") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa_laboral") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año) 
+
+industria_mujer<- industria_mujer %>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "industria_mujer")
+
+empleototal_industria<- empleototal_industria %>%
+  mutate(across(c("Country Name"), as.character)) %>%
+  pivot_longer(cols = starts_with("20"), names_to = "año", values_to = "tasa_laboral") %>%
+  pivot_wider(names_from = "Country Name", values_from = "tasa_laboral") %>%
+  select(Argentina, Brazil, Canada, Chile, Mexico, Peru, Panama, Paraguay, Uruguay, Ecuador, año) 
+
+empleototal_industria<- empleototal_industria%>%
+  pivot_longer(cols = -año, names_to = "pais", values_to = "empleo_total_industria")
+
+#########################uniendo las bases de datos 
+
+
+
+# Unir las bases de datos
+base_final <- tasa_laboral_mundo %>%
+  left_join(agricultura_hombre, by = c("año", "pais")) %>%
+  left_join(agricultura_mujer, by = c("año", "pais")) %>%
+  left_join(empleototal_agricultura, by = c("año", "pais")) %>%
+  left_join(industria_hombre, by = c("año", "pais")) %>%
+  left_join(industria_mujer, by = c("año", "pais")) %>%
+  left_join(empleototal_industria, by = c("año", "pais")) %>%
+  left_join(poblacion_total, by = c("año", "pais")) %>%
+   left_join(Tasa_de_actividad_total, by = c("año", "pais")) %>%
+   left_join(Tasa_de_actividad_femenina, by = c("año", "pais")) %>%
+   left_join(tasa_actividad_masculina, by = c("año", "pais")) %>%
+  left_join(salario_hombres, by = c("año", "pais")) %>%
+  left_join(salario_mujeres, by = c("año", "pais")) %>%
+  left_join(salario_total, by = c("año", "pais")) 
+  
+
+
+```
+
+
+  
+
+
+Page 1
+=====================================
+
+Column
+-------------------------------------
+
+### Chart A
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(forcats)
+library(DT)
+library(gganimate)
+
+paises_seleccionados <- c("Argentina", "Chile", "Brazil", "Canada", "Mexico")
+
+base_filtrada <- base_final %>%
+  filter(pais %in% paises_seleccionados) %>%
+  mutate(grupo = pais)
+
+# Convertir la columna "año" a tipo numérico si es necesario
+base_filtrada$año <- as.numeric(as.character(base_filtrada$año))
+library(plotly)
+
+
+library(plotly)
+
+grafico_interactivo <- base_filtrada %>%
+  ggplot(aes(x = año, y = tasa_laboral, color = pais)) +
+  geom_line(size = 1.1) +
+  scale_x_continuous(breaks = seq(min(base_filtrada$año), max(base_filtrada$año), 10)) +
+  scale_y_continuous(breaks = seq(45, 85, 5), labels = seq(45, 85, 5)) +
+  scale_color_brewer(name = NULL, type = "qual", palette = "Dark2") +
+  labs(title = "Tasa de actividad laboral",
+       subtitle = "1960-2020",
+       caption = "Fuente: The World Bank ",
+       x = "Año",
+       y = "Tasa de participación laboral total") +
+  theme_bw() +
+  theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5, "mm"),
+        panel.border = element_rect(color = "black", fill = NA, size = 1),
+        plot.title = element_text(color = "black", size = 16, face = "bold"),
+        legend.position = c(0.9, 0.2))
+
+grafico_interactivo <- ggplotly(grafico_interactivo) %>%
+  layout(plot_bgcolor = "transparent", paper_bgcolor = "transparent")
+
+grafico_interactivo
+
+
+
+
+```
+Column
+-------------------------------------
+
+### Chart B
+
+```{r}
+grafico_interactivo2 <- base_filtrada %>%
+ ggplot(aes(x = año, y = Tasa_de_actividad_femenina, color = pais)) +
+  geom_line(size = 1.1) +
+  scale_x_continuous(breaks = seq(min(base_filtrada$año), max(base_filtrada$año), 10)) +
+  scale_y_continuous(breaks = seq(45, 85, 5), labels = seq(45, 85, 5)) +
+  scale_color_brewer(name = NULL, type = "qual", palette = "Dark2") +
+  labs(title = "Tasa de Actividad Laboral Femenina",
+       subtitle = "1960-2020",
+       caption = "Fuente: The World Bank ",
+       x = "Año",
+       y = "Tasa de participación laboral Femenina") +
+  theme_bw() +
+  theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5, "mm"),
+        panel.border = element_rect(color = "black", fill = NA, size = 1),
+        plot.title = element_text(color = "black", size = 10, face = "bold"),
+        legend.position = c(0.9, 0.2))
+
+grafico_interactivo2 <- ggplotly(grafico_interactivo2) %>%
+  layout(plot_bgcolor = "transparent", paper_bgcolor = "transparent")
+
+grafico_interactivo2
+
+
+
+
+```
+
+### Chart C
+
+```{r}
+grafico_interactivo3 <- base_filtrada %>%
+  ggplot(aes(x = año, y = Tasa_de_actividad_masculina, color = pais)) +
+  geom_line(size = 1.1) +
+  scale_x_continuous(breaks = seq(min(base_filtrada$año), max(base_filtrada$año), 10)) +
+  scale_y_continuous(breaks = seq(45, 85, 5), labels = seq(45, 85, 5)) +
+  scale_color_brewer(name = NULL, type = "qual", palette = "Dark2") +
+  labs(title = "Tasa de Actividad Laboral Masculina",
+       subtitle = "1960-2020",
+       caption = "Fuente: The World Bank ",
+       x = "Año",
+       y = "Tasa de participación laboral Masculina") +
+  theme_bw() +
+  theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5, "mm"),
+        panel.border = element_rect(color = "black", fill = NA, size = 1),
+        plot.title = element_text(color = "black", size = 10, face = "bold"),
+        legend.position = c(0.9, 0.2))
+
+grafico_interactivo3 <- ggplotly(grafico_interactivo3) %>%
+  layout(plot_bgcolor = "transparent", paper_bgcolor = "transparent")
+
+grafico_interactivo3
+
+```
+
+
+
+Page 2
+
+
+Page 2
+=====================================
+
+Column
+-------------------------------------
+
+
+
+### Chart A
+```{r}
+library(plotly)
+
+grafico_interactivo2 <- base_filtrada %>%
+  plot_ly(x = ~año, y = ~salario_total, 
+          hoverinfo = "text",
+          text = ~paste("País: ", pais, "<br>Salario: ", salario_total)) %>%
+  add_markers(size = ~salario_total,
+              color = ~pais,
+              sizemode = "diameter",
+              frame = ~año,
+              ids = ~pais, 
+              marker = list(opacity = 0.5,
+                            sizemode= "diameter",
+              sizeref = 3)) %>%
+  layout(xaxis = list(title = "Año"),
+         yaxis = list(title = "Salario"),
+         title = list(text = "Progresión del Salario", font = list(size = 15, color = "black", family = "Arial", weight = "bold"))) %>%
+           animation_opts(frame = 700,
+                 transition = 350, 
+                 easing = "linear") %>%
+  animation_slider(currentvalue = list(prefix = NULL,
+                                       font = list(
+                                         color = "#820000",
+                                         size = 15)))
+      
+
+
+grafico_interactivo2
+
+```
+
+Column
+-------------------------------------
+
+### Chart B
+```{r}
+library(ggplot2)
+
+# Filtrar los datos para las columnas de interés y eliminar filas con NA
+datos_salario <- subset(base_final, !is.na(salario_hombres) & !is.na(salario_mujeres))
+
+# Ordenar los países en base al orden de aparición en los datos
+datos_salario$pais <- factor(datos_salario$pais, levels = unique(datos_salario$pais))
+
+# Crear una nueva columna que contenga el total de hombres y mujeres
+datos_salario$total_hombres <- datos_salario$salario_hombres
+datos_salario$total_mujeres <- datos_salario$salario_mujeres
+
+# Crear el gráfico de barras apiladas con margen y efecto tridimensional
+grafico_barras_apiladas1 <- ggplot(datos_salario) +
+  geom_bar(aes(y = pais, x = total_hombres, fill = "Hombres"), stat = "identity", position = "stack") +
+  geom_bar(aes(y = pais, x = total_mujeres, fill = "Mujeres"), stat = "identity", position = "stack") +
+  labs(x = "Tasa Laboral", y = "País", title = "Comparación del Salario por Género y País") +
+  scale_fill_manual(values = c("Hombres" = "steelblue", "Mujeres" = "salmon")) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(face = "bold", size = 10),
+        panel.border = element_rect(color = "black", fill = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(color = "black"))
+
+grafico_barras_apiladas1<- ggplotly(grafico_barras_apiladas1)
+grafico_barras_apiladas1
+
+
+
+```
+
+```{r}
+library(ggplot2)
+
+# Filtrar los datos para las columnas de interés y eliminar filas con NA
+datos_salario <- subset(base_final, !is.na(salario_hombres) & !is.na(salario_mujeres))
+
+# Ordenar los países en base al orden de aparición en los datos
+datos_salario$pais <- factor(datos_salario$pais, levels = unique(datos_salario$pais))
+
+# Crear una nueva columna que contenga el total de hombres y mujeres
+datos_salario$total_hombres <- datos_salario$salario_hombres
+datos_salario$total_mujeres <- datos_salario$salario_mujeres
+
+# Crear el gráfico de barras apiladas con margen y efecto tridimensional
+grafico_barras_apiladas1 <- ggplot(datos_salario) +
+  geom_bar(aes(y = pais, x = total_hombres, fill = "Hombres"), stat = "identity", position = "stack") +
+  geom_bar(aes(y = pais, x = total_mujeres, fill = "Mujeres"), stat = "identity", position = "stack") +
+  labs(x = "Tasa Laboral", y = "País", title = "Comparación del Salario por Género y País") +
+  scale_fill_manual(values = c("Hombres" = "steelblue", "Mujeres" = "salmon")) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(face = "bold", size = 10),
+        panel.border = element_rect(color = "black", fill = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(color = "black"))
+
+grafico_barras_apiladas1<- ggplotly(grafico_barras_apiladas1)
+grafico_barras_apiladas1
+
+```
+
